@@ -29,6 +29,12 @@ The checked-in `src/output.css` is a ready-to-view stylesheet. Rebuilding it use
 
 The site is static and needs no server. The contact form opens a prefilled email draft addressed to `mohamedlaaribi45@gmail.com`; it does not transmit or store submissions. A visitor needs an email app configured to send the message. To accept messages without that, configure a form service and update the form handling in `src/main.js`.
 
+## Automatic GitHub projects
+
+The projects section loads all public repositories belonging to `MO7KUN` from GitHub's public API on each page load, with newest repositories first. Pagination supports accounts with more than 100 repositories. Public forks and archived projects are included; private and disabled repositories are excluded. Create a public repository, add a description, and it will appear when visitors open or refresh the portfolio without editing or rebuilding the site. GitHub Projects boards are not repositories and are not imported. The featured CV projects remain visible if GitHub is unavailable or its API rate limit is reached; visitors can use the link to the GitHub profile.
+
+No access token or backend is needed. Repository descriptions and programming languages come directly from GitHub.
+
 ## Personalize
 
 - Edit the page content in `index.html`.

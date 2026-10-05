@@ -77,6 +77,44 @@ document.addEventListener('DOMContentLoaded', () => {
     if (note) note.textContent = 'Your email app should open with the message ready to send. If it does not, email mohamedlaaribi45@gmail.com directly.';
     window.location.href = `mailto:mohamedlaaribi45@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   });
+  const githubProjects = document.querySelector('#github-projects');
+  const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
+  if (githubProjects) {
+    // Public repository metadata only: never put a GitHub token in frontend code.
+    const loadRepositories = async () => {
+      const repositories = [];
+      for (let page = 1; ; page += 1) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 12000);
+        try {
+          const response = await fetch(`https://api.github.com/users/MO7KUN/repos?sort=created&direction=desc&per_page=100&page=${page}`, {
+            headers: { Accept: 'application/vnd.github+json' },
+            signal: controller.signal,
+            cache: 'no-cache'
+          });
+          if (!response.ok) throw new Error('GitHub repositories could not be loaded.');
+          const batch = await response.json();
+          if (!Array.isArray(batch)) throw new Error('Unexpected GitHub response.');
+          repositories.push(...batch);
+          if (batch.length < 100) return repositories;
+        } finally {
+          clearTimeout(timeout);
+        }
+      }
+    };
+    loadRepositories()
+      .then(repositories => {
+        const projects = repositories.filter(repository => !repository.private && !repository.disabled);
+        githubProjects.innerHTML = projects.length ? projects.map(repository => `
+          <article class="github-project-card">
+            <div class="github-project-top"><span>GITHUB REPOSITORY</span><a href="https://github.com/MO7KUN/${encodeURIComponent(repository.name)}" target="_blank" rel="noopener noreferrer" aria-label="Open ${escapeHtml(repository.name)} on GitHub">↗</a></div>
+            <h4>${escapeHtml(repository.name.replace(/[-_]/g, ' '))}</h4>
+            <p>${escapeHtml(repository.description || 'Explore this project on GitHub.')}</p>
+            <div class="github-project-meta"><span>${escapeHtml(repository.language || 'Code')}</span><span>★ ${repository.stargazers_count}</span><span>Updated ${new Date(repository.updated_at).toLocaleDateString()}</span></div>
+          </article>`).join('') : '<p class="github-loading">No public repositories are available yet.</p>';
+      })
+      .catch(() => { githubProjects.innerHTML = '<p class="github-loading">Recent repositories are unavailable right now. Visit GitHub to explore my work.</p>'; });
+  }
   const year = document.querySelector('#year');
   if (year) year.textContent = new Date().getFullYear();
 });
