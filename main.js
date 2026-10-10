@@ -80,6 +80,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const githubProjects = document.querySelector('#github-projects');
   const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
   if (githubProjects) {
+    const normalizeProjectName = name => String(name).toLowerCase().replace(/[^a-z0-9]/g, '');
+    // Include repository aliases when the featured title differs from GitHub.
+    const featuredNames = new Set([
+      ...Array.from(document.querySelectorAll('#work .project-grid .project-card h3'), heading => normalizeProjectName(heading.textContent)),
+      ...['UniversiBot', 'French-Spell-Checker', 'Smart-Spell-Checker', 'Player-Value-Prediction', 'Football-Player-Market-Value-Prediction', 'Soubai-Shop'].map(normalizeProjectName)
+    ]);
+    document.querySelectorAll('#work .project-grid a[href]').forEach(link => {
+      const url = new URL(link.href, window.location.href);
+      const segments = url.pathname.split('/').filter(Boolean);
+      if (url.hostname === 'github.com' && segments[0]?.toLowerCase() === 'mo7kun' && segments[1]) {
+        featuredNames.add(normalizeProjectName(segments[1]));
+      }
+    });
     // Public repository metadata only: never put a GitHub token in frontend code.
     const loadRepositories = async () => {
       const repositories = [];
@@ -104,7 +117,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     loadRepositories()
       .then(repositories => {
-        const projects = repositories.filter(repository => !repository.private && !repository.disabled);
+        const projects = repositories
+          .filter(repository => !repository.private && !repository.disabled && !featuredNames.has(normalizeProjectName(repository.name)))
+          .slice(0, 10);
         githubProjects.innerHTML = projects.length ? projects.map(repository => `
           <article class="github-project-card">
             <div class="github-project-top"><span>GITHUB REPOSITORY</span><a href="https://github.com/MO7KUN/${encodeURIComponent(repository.name)}" target="_blank" rel="noopener noreferrer" aria-label="Open ${escapeHtml(repository.name)} on GitHub">↗</a></div>
