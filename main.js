@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(repositories => {
         const projects = repositories
           .filter(repository => !repository.private && !repository.disabled && !featuredNames.has(normalizeProjectName(repository.name)))
-          .slice(0, 10);
+          .slice(0, 9);
         githubProjects.innerHTML = projects.length ? projects.map(repository => `
           <article class="github-project-card">
             <div class="github-project-top"><span>GITHUB REPOSITORY</span><a href="https://github.com/MO7KUN/${encodeURIComponent(repository.name)}" target="_blank" rel="noopener noreferrer" aria-label="Open ${escapeHtml(repository.name)} on GitHub">↗</a></div>
